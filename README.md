@@ -26,4 +26,4 @@ or
 - `npm start`
 
 ## Tutorial
-A complete tutorial here https://docs.dhtmlx.com/scheduler/desktop__howtostart_nodejs.html
+A complete tutorial here https://docs.dhtmlx.com/scheduler/howtostart_nodejs.html
