@@ -1,4 +1,5 @@
 require("date-format-lite"); // add date format
+var xssFilters = require('xss-filters');
 
 class Storage {
 	constructor(connection) {
@@ -23,6 +24,8 @@ class Storage {
 
 		result.forEach((entry) => {
 			// format date and time
+			entry.id = xssFilters.inHTMLData(entry.id);
+			entry.text = xssFilters.inHTMLData(entry.text);
 			entry.start_date = entry.start_date.format("YYYY-MM-DD hh:mm");
 			entry.end_date = entry.end_date.format("YYYY-MM-DD hh:mm");
 		});
@@ -32,7 +35,7 @@ class Storage {
 	// create new event
 	async insert(data) {
 		let result = await this._db.query(
-			"INSERT INTO ?? (`start_date`, `end_date`, `text`) VALUES (?,?,?)", 
+			"INSERT INTO ?? (`start_date`, `end_date`, `text`) VALUES (?,?,?)",
 			[this.table, data.start_date, data.end_date, data.text]);
 
 		return {
@@ -44,7 +47,7 @@ class Storage {
 	// update event
 	async update(id, data) {
 		await this._db.query(
-			"UPDATE ?? SET `start_date` = ?, `end_date` = ?, `text` = ? WHERE id = ?", 
+			"UPDATE ?? SET `start_date` = ?, `end_date` = ?, `text` = ? WHERE id = ?",
 			[this.table, data.start_date, data.end_date, data.text, id]);
 
 		return {
@@ -55,7 +58,7 @@ class Storage {
 	// delete event
 	async delete(id) {
 		await this._db.query(
-			"DELETE FROM ?? WHERE `id`=? ;", 
+			"DELETE FROM ?? WHERE `id`=? ;",
 			[this.table, id]);
 
 		return {

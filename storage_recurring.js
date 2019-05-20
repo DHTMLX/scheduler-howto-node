@@ -1,4 +1,5 @@
 require("date-format-lite"); // add date format
+var xssFilters = require('xss-filters');
 
 class Storage {
 	constructor(connection) {
@@ -23,6 +24,11 @@ class Storage {
 
 		result.forEach((entry) => {
 			// format date and time
+			entry.id = xssFilters.inHTMLData(entry.id);
+			entry.text = xssFilters.inHTMLData(entry.text);
+			entry.event_pid = xssFilters.inHTMLData(entry.event_pid);
+			entry.event_length = xssFilters.inHTMLData(entry.event_length);
+			entry.rec_type = xssFilters.inHTMLData(entry.rec_type);
 			entry.start_date = entry.start_date.format("YYYY-MM-DD hh:mm");
 			entry.end_date = entry.end_date.format("YYYY-MM-DD hh:mm");
 		});
@@ -32,12 +38,12 @@ class Storage {
 
 	// create new event
 	async insert(data) {
-		let sql = "INSERT INTO ?? " +  
+		let sql = "INSERT INTO ?? " +
 			"(`start_date`, `end_date`, `text`, `event_pid`, `event_length`, `rec_type`) " +
 			"VALUES (?, ?, ?, ?, ?, ?)";
 
 		const result = await this._db.query(
-			sql, 
+			sql,
 			[
 				this.table,
 				data.start_date,
@@ -47,8 +53,8 @@ class Storage {
 				data.event_length || 0,
 				data.rec_type
 			]);
-		
-		
+
+
 		// delete a single occurrence from  recurring series
 		let action = "inserted";
 		if (data.rec_type == "none") {
@@ -67,14 +73,14 @@ class Storage {
 			// all modified occurrences must be deleted when we update recurring series
 			// https://docs.dhtmlx.com/scheduler/server_integration.html#savingrecurringevents
 			await this._db.query(
-				"DELETE FROM ?? WHERE `event_pid`= ?;", 
+				"DELETE FROM ?? WHERE `event_pid`= ?;",
 				[this.table, id]);
 		}
 
 		await this._db.query(
-			"UPDATE ?? SET " + 
+			"UPDATE ?? SET " +
 			"`start_date` = ?, `end_date` = ?, `text` = ?, `event_pid` = ?, `event_length`= ?, `rec_type` = ? "+
-			"WHERE id = ?", 
+			"WHERE id = ?",
 			[
 				this.table,
 				data.start_date,
@@ -97,7 +103,7 @@ class Storage {
 		// some logic specific to recurring events support
 		// https://docs.dhtmlx.com/scheduler/server_integration.html#savingrecurringevents
 		let event = await this._db.query(
-			"SELECT * FROM ?? WHERE id=? LIMIT 1;", 
+			"SELECT * FROM ?? WHERE id=? LIMIT 1;",
 			[this.table, id]);
 
 		if (event.event_pid) {
@@ -110,12 +116,12 @@ class Storage {
 		if (event.rec_type && event.rec_type != "none") {
 			// if a recurring series was deleted - delete all modified occurrences of the series
 			await this._db.query(
-				"DELETE FROM ?? WHERE `event_pid`=? ;", 
+				"DELETE FROM ?? WHERE `event_pid`=? ;",
 				[this.table, id]);
 		}
 
 		await this._db.query(
-			"DELETE FROM ?? WHERE `id`= ?;", 
+			"DELETE FROM ?? WHERE `id`= ?;",
 			[this.table, id]);
 
 		return {
