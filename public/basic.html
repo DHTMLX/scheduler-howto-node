@@ -38,7 +38,7 @@
 			scheduler.load("/events", "json");
 
 			// connect backend to scheduler
-			var dp = new dataProcessor("/events");
+			var dp = scheduler.createDataProcessor("/events");
 			dp.init(scheduler);
 
 			// set data exchange mode

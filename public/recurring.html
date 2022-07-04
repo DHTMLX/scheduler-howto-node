@@ -39,7 +39,7 @@
 			scheduler.load("/recurring_events", "json");
 
 			// send client-side updates to the backend
-			var dp = new dataProcessor("/recurring_events");
+			var dp = scheduler.createDataProcessor("/recurring_events");
 			dp.init(scheduler);
 
 			// set data exchange mode
