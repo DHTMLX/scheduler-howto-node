@@ -1,5 +1,5 @@
 require("date-format-lite"); // add date format
-var xssFilters = require('xss-filters');
+const xssFilters = require('xss-filters');
 
 class Storage {
 	constructor(connection) {
