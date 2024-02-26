@@ -4,7 +4,7 @@
 		<title>DHTMLX Scheduler with Node.js - Recurring events</title>
 		<meta charset="utf-8">
 		<script src="https://cdn.dhtmlx.com/scheduler/edge/dhtmlxscheduler.js"></script>
-		<link rel="stylesheet" href="https://cdn.dhtmlx.com/scheduler/edge/dhtmlxscheduler_material.css" type="text/css" charset="utf-8">
+		<link rel="stylesheet" href="https://cdn.dhtmlx.com/scheduler/edge/dhtmlxscheduler.css" type="text/css" charset="utf-8">
 		<style>
 			html, body{
 				margin:0px;
@@ -29,6 +29,9 @@
 			<div class="dhx_cal_data"></div>
 		</div>
 		<script>
+			scheduler.plugins({
+				recurring: true
+			});
 			scheduler.config.load_date="%Y-%m-%d %H:%i";
 			scheduler.init("scheduler_here", new Date(2022, 0, 20), "week");
 			scheduler.setLoadMode("day");
