@@ -1,36 +1,21 @@
-function callMethod (method) {
-	return async (req, res) => {
-		let result;
+export const setRoutes = (app, prefix, storage) => {
+  const callMethod = (method) => async (req, res) => {
+    try {
+      const result = await method(req, res);
+      res.send(result);
+    } catch (e) {
+      res.send({
+        action: 'error',
+        message: e?.message ?? 'Unknown error',
+      });
+    }
+  };
 
-		try {
-			result = await method(req, res);
-		} catch (e) {
-			result =  {
-				action: "error",
-				message: e.message
-			}
-		}
+  app.get(prefix, callMethod((req) => storage.getAll(req.query)));
 
-		res.send(result);
-	}
-};
+  app.post(prefix, callMethod((req) => storage.insert(req.body)));
 
-module.exports = {
-	setRoutes (app, prefix, storage) {
-		app.get(`${prefix}`, callMethod((req) => {
-			return storage.getAll(req.query);
-		}));
+  app.put(`${prefix}/:id`, callMethod((req) => storage.update(req.params.id, req.body)));
 
-		app.post(`${prefix}`, callMethod((req) => {
-			return storage.insert(req.body);
-		}));
-
-		app.put(`${prefix}/:id`, callMethod((req) => {
-			return storage.update(req.params.id, req.body);
-		}));
-
-		app.delete(`${prefix}/:id`, callMethod((req) => {
-			return storage.delete(req.params.id);
-		}));
-	}
+  app.delete(`${prefix}/:id`, callMethod((req) => storage.delete(req.params.id)));
 };
