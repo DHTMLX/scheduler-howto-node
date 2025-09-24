@@ -1,5 +1,5 @@
-require("date-format-lite"); // add date format
-const xssFilters = require('xss-filters');
+import "date-format-lite"; // add date format
+import xssFilters from 'xss-filters';
 
 class Storage {
 	constructor(connection) {
@@ -20,21 +20,21 @@ class Storage {
 			queryParams.push(params.to);
 		}
 
-		let result = await this._db.query(query, queryParams);
+		const [rows] = await this._db.query(query, queryParams);
 
-		result.forEach((entry) => {
+		rows.forEach((entry) => {
 			// format date and time
 			entry.id = xssFilters.inHTMLData(entry.id);
 			entry.text = xssFilters.inHTMLData(entry.text);
 			entry.start_date = entry.start_date.format("YYYY-MM-DD hh:mm");
 			entry.end_date = entry.end_date.format("YYYY-MM-DD hh:mm");
 		});
-		return result;
+		return rows;
 	}
 
 	// create new event
 	async insert(data) {
-		let result = await this._db.query(
+		const [result] = await this._db.query(
 			"INSERT INTO ?? (`start_date`, `end_date`, `text`) VALUES (?,?,?)",
 			[this.table, data.start_date, data.end_date, data.text]);
 
@@ -67,4 +67,4 @@ class Storage {
 	}
 }
 
-module.exports = Storage;
+export default Storage;

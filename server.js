@@ -1,12 +1,17 @@
-const express = require("express");
-// use body parse for parsing POST request
-const bodyParser = require("body-parser");
+import express from "express";
+import mysql from "mysql2/promise";
+import path from "path";
+import { fileURLToPath } from "url";
+import helmet from "helmet";
+import * as router from './router.js';
+import Storage from "./storage.js";
+import RecurringStorage from "./storage_recurring.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
 const port = 3000;
-
-// we'll use mysql for db access and util to promisify queries
-const util = require("util");
-const mysql = require('mysql');
 
 // use your own parameters for database
 const mysqlConfig = {
@@ -17,11 +22,18 @@ const mysqlConfig = {
 	"database": "scheduler_howto_node"
 };
 
-const helmet = require("helmet");
-app.use(helmet());
-
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "https://cdn.dhtmlx.com", "'unsafe-inline'"],
+      styleSrc: ["'self'", "https://cdn.dhtmlx.com", "'unsafe-inline'"],
+      connectSrc: ["'self'", "https://cdn.dhtmlx.com"],
+    },
+  })
+);
 // scheduler sends application/x-www-form-urlencoded requests,
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true }));
 
 // you'll need these headers if your API is deployed on a different domain than a public page
 // in production system you could set Access-Control-Allow-Origin to your domains
@@ -34,21 +46,17 @@ app.use(function(req, res, next) {
 });
 
 // return static pages from "./public" directory
-app.use(express.static(__dirname + "/public"));
-
-const router = require("./router");
+app.use(express.static(path.join(__dirname, "public")));
 
 // open connection to mysql
 const connectionPool = mysql.createPool(mysqlConfig);
-connectionPool.query = util.promisify(connectionPool.query);
 
 // add listeners to basic CRUD requests
-const Storage = require("./storage");
-const eventsStorage = new Storage(connectionPool);
-router.setRoutes(app, "/events", eventsStorage);
+const storage = new Storage(connectionPool);
+// Setup routes
+router.setRoutes(app, "/events", storage);
 
 // add listeners to basic CRUD with recurring events support
-const RecurringStorage = require("./storage_recurring");
 const recurringEventsStorage = new RecurringStorage(connectionPool);
 router.setRoutes(app, "/recurring_events", recurringEventsStorage)
 
